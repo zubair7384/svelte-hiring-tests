@@ -4,6 +4,8 @@
 
 Implement a functional form using Svelte's form handling capabilities. The HTML structure and CSS are provided - you need to add all the necessary Svelte functionality.
 
+NOTE: USE NODE (17.0.0 or higher)
+
 ## Requirements
 
 ### 1. State Management
