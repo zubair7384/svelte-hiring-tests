@@ -1,19 +1,92 @@
 <script lang="ts">
+    import {writable} from "svelte/store"
     // TODO: Implement form state management
+    const formDetails = writable<App.UserFormData>({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+    })
+
+    const success = writable<string | null>(null);
+    const formErrors = writable<App.FormErrors>({})
+    const submittedFormData = writable<Array<Omit<App.UserFormData, "password">>>([])
+    const reset = {
+                    firstName: "",
+                    lastName: "",
+                    email: "",
+                    password: "",
+                }
     // TODO: Implement form validation
+    function validateForm(data: App.UserFormData): App.FormErrors {
+        const err : App.FormErrors = {};
+
+        if(!data.firstName.trim()) err.firstName = "First name is required";
+        if(!data.lastName.trim()) err.lastName = "Last name is required";
+        if(!data.email.trim()) err.email = "Email is required";
+        if(!data.password.trim()) err.password = "Password is required";
+
+        if (data.password.length < 6)
+        err.password = "Password must be at least 6 characters"
+    return err
+    }
     // TODO: Implement submit handler
+
+    function handleSubmit(e:Event) {
+        e.preventDefault()
+
+        formDetails.update((data) => {
+            // console.log(data, "data")
+            const error = validateForm(data);
+            formErrors.set(error);
+
+            if (Object.keys(error).length === 0) {
+                success.set("Form details submitted successfully!")
+
+                submittedFormData.update((entries) => [
+                    ...entries,
+                    {firstName: data.firstName, lastName: data.lastName, email: data.email},
+                ])
+
+                formDetails.set(reset)
+            } else {
+                success.set(null)
+            }
+            return {...data}
+        })
+
+    }
+
+    function handleInputChange() {
+        success.set(null)
+    }
+
+    function handleClear() {
+        formDetails.set(reset)
+        formErrors.set({});
+        success.set(null)
+    }
+
     // TODO: Implement success state management
 </script>
 
 <div class="form-container">
-    <form>
+    <form on:submit={handleSubmit}>
         <div class="form-group">
             <label for="firstName">First Name</label>
             <input
                 id="firstName"
                 type="text"
                 placeholder="Enter your first name"
+                class:input-error={$formErrors.firstName}
+                bind:value={$formDetails.firstName}
+                on:input={handleInputChange}
             />
+            {#if $formErrors.firstName}
+            <span class="error-message">
+                {$formErrors.firstName}
+            </span>
+            {/if}
         </div>
 
         <div class="form-group">
@@ -22,7 +95,15 @@
                 id="lastName"
                 type="text"
                 placeholder="Enter your last name"
+                class:input-error={$formErrors.lastName}
+                bind:value={$formDetails.lastName}
+                on:input={handleInputChange}
             />
+            {#if $formErrors.lastName}
+            <span class="error-message">
+                {$formErrors.lastName}
+            </span>
+            {/if}
         </div>
 
         <div class="form-group">
@@ -31,7 +112,15 @@
                 id="email"
                 type="email"
                 placeholder="Enter your email"
+                class:input-error={$formErrors.email}
+                bind:value={$formDetails.email}
+                on:input={handleInputChange}
             />
+            {#if $formErrors.email}
+            <span class="error-message">
+                {$formErrors.email}
+            </span>
+            {/if}
         </div>
 
         <div class="form-group">
@@ -40,13 +129,46 @@
                 id="password"
                 type="password"
                 placeholder="Enter your password"
+                class:input-error={$formErrors.password}
+                bind:value={$formDetails.password}
+                on:input={handleInputChange}
             />
+            {#if $formErrors.password}
+            <span class="error-message">
+                {$formErrors.password}
+            </span>
+            {/if}
         </div>
-
-        <button type="submit" class="submit-button">Submit</button>
+<div class="form-buttons">
+    <button type="submit" class="submit-button">Submit</button>
+    <button type="button" class="clear-button" on:click={handleClear}>Clear</button>
+</div>
     </form>
 
     <!-- TODO: Add success message section here -->
+     {#if $success} 
+     <div class="success-message">{$success}</div>
+     {/if}
+{#if $submittedFormData.length > 0}
+    <table class="data-table-wrapper">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+        {#each $submittedFormData as entries}
+            <tr>
+                <td>{entries.firstName}</td>
+                <td>{entries.lastName}</td>
+                <td>{entries.email}</td>
+            </tr>
+            {/each}
+        </tbody>
+    </table>
+    {/if}
 </div>
 
 <style>
@@ -100,6 +222,12 @@
         color: #EF4444;
     }
 
+    .form-buttons {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
     .submit-button {
         width: 100%;
         padding: 0.75rem 1.5rem;
@@ -112,9 +240,23 @@
         cursor: pointer;
         transition: background-color 0.15s ease-in-out;
     }
+    .clear-button {
+        padding: 0.75rem 1.5rem;
+        background-color: #fff;
+        color: #3B82F6;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.15s ease-in-out;
+    }
 
     .submit-button:hover {
         background-color: #2563EB;
+    }
+    .clear-button:hover {
+        background-color: #eeeeee;
     }
 
     .submit-button:focus {
@@ -134,5 +276,20 @@
         border: 1px solid #C8E6C9;
         border-radius: 6px;
         color: #1B5E20;
+    }
+    .data-table-wrapper {
+        margin-top: 1.5rem;
+        width: 100%;
+        border: collapse;
+    }
+    .data-table-wrapper th,
+    .data-table-wrapper td {
+        padding: 1rem;
+        border: 1px solid #d9d9d9;
+        text-align: left;
+    }
+
+    .data-table-wrapper td {
+        font-weight:600 ;
     }
 </style>

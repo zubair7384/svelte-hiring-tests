@@ -3,9 +3,12 @@
   
   export let item;
   
+  /**
+   * @param {any} id
+   */
   function navigateToDetail(id) {
     // TODO: Implement navigation
-    // goto(`/items/${id}`);
+    goto(`/items/${id}`);
   }
 </script>
 

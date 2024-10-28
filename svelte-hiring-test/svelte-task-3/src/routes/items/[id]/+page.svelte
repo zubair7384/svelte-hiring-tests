@@ -1,4 +1,4 @@
-// src/routes/items/[id]/+page.svelte
+
 <script>
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
@@ -16,7 +16,7 @@
   function goBack() {
     // TODO: Student needs to implement navigation back to home
     // Uncomment and fix this:
-    // goto('/');
+    goto('/');
   }
 </script>
 
