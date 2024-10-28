@@ -1,22 +1,18 @@
 <script lang="ts">
     import {writable} from "svelte/store"
     // TODO: Implement form state management
-    const formDetails = writable<App.UserFormData>({
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-    })
-
-    const success = writable<string | null>(null);
-    const formErrors = writable<App.FormErrors>({})
-    const submittedFormData = writable<Array<Omit<App.UserFormData, "password">>>([])
-    const reset = {
+    const initialData = {
                     firstName: "",
                     lastName: "",
                     email: "",
                     password: "",
                 }
+    const formDetails = writable<App.UserFormData>(initialData)
+
+    const success = writable<string | null>(null);
+    const formErrors = writable<App.FormErrors>({})
+    const submittedFormData = writable<Array<Omit<App.UserFormData, "password">>>([])
+   
     // TODO: Implement form validation
     function validateForm(data: App.UserFormData): App.FormErrors {
         const err : App.FormErrors = {};
@@ -48,7 +44,7 @@
                     {firstName: data.firstName, lastName: data.lastName, email: data.email},
                 ])
 
-                formDetails.set(reset)
+                formDetails.set(initialData)
             } else {
                 success.set(null)
             }
@@ -62,7 +58,7 @@
     }
 
     function handleClear() {
-        formDetails.set(reset)
+        formDetails.set(initialData)
         formErrors.set({});
         success.set(null)
     }
